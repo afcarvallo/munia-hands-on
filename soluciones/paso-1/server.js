@@ -1,4 +1,4 @@
-// MUNIA · PASO 1: servidor + proxy al LLM (Node 18+, sin dependencias).
+// MUNIA · PASO 1: servidor + proxy al LLM, SIN reglas (el modelo puede inventar) (Node 18+, sin dependencias).
 // Sirve el frontend de /public y hace de proxy hacia OpenRouter (Llama 3.3 70B).
 // La API key vive solo en el servidor: el navegador nunca la ve.
 

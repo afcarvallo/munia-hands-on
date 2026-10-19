@@ -1,4 +1,4 @@
-// MUNIA · PASO 3: chat con streaming + tarjetas de beneficio (JS plano).
+// MUNIA · PASO 3 (bonus, versión final): frontend en JS plano, sin build. Estado en localStorage.
 
 const $ = (s) => document.querySelector(s);
 const app = $("#app");
@@ -21,6 +21,7 @@ const state = {
   tab: "chat",
   paso: 1,
   borrador: { intereses: [] },
+  filtro: "Todos",
   beneficios: [],
   cargando: false,
 };
@@ -43,6 +44,14 @@ function edadDesde(fecha) {
   let e = h.getFullYear() - f.getFullYear();
   if (h < new Date(h.getFullYear(), f.getMonth(), f.getDate())) e--;
   return e;
+}
+
+// Mismas reglas que el servidor: la elegibilidad es determinista.
+function cumple(b, p) {
+  return (b.edad_min == null || p.edad >= b.edad_min) &&
+    (b.edad_max == null || p.edad <= b.edad_max) &&
+    (b.genero == null || b.genero === p.genero) &&
+    (b.ingreso_max == null || Number(p.ingreso) <= b.ingreso_max);
 }
 
 function md(texto) {
@@ -206,12 +215,74 @@ async function enviar(texto) {
   render();
 }
 
-// --- Pestañas que se completan en el paso 4 --------------------------------------
-const pronto = (t) => () => ($(".vista").innerHTML = `<div class="vacio">${t}<br>Lo construimos en el paso 4 🚧</div>`);
-const vistaBeneficios = pronto("Catálogo de beneficios");
-const vistaMis = pronto("Mis solicitudes");
-const vistaPerfil = pronto("Mi perfil");
-function solicitar() { alert("Las solicitudes con QR llegan en el paso 4 🚧"); }
+// --- Beneficios, Mis beneficios, Perfil ------------------------------------------
+function vistaBeneficios() {
+  const p = state.perfil;
+  const lista = state.beneficios.filter((b) => state.filtro === "Todos" || b.categoria === state.filtro);
+  const si = lista.filter((b) => cumple(b, p)), no = lista.filter((b) => !cumple(b, p));
+  $(".vista").innerHTML = `
+    <div class="filtros">${["Todos", ...CATEGORIAS].map((c) => `<button class="chip ${c === state.filtro ? "on" : ""}" data-filtro="${c}">${c}</button>`).join("")}</div>
+    <div class="seccion">Recomendados para ti (${si.length})</div>
+    ${si.map((b) => tarjeta(b)).join("") || `<p class="vacio">Sin beneficios en esta categoría.</p>`}
+    ${no.length ? `<div class="seccion">No cumples requisitos (${no.length})</div>` + no.map((b) => `<div class="card" style="opacity:.55"><span class="tag">${esc(b.categoria)}</span><h3>${esc(b.nombre)}</h3><p>${esc(b.requisitos[0])}</p></div>`).join("") : ""}`;
+  app.querySelectorAll("[data-filtro]").forEach((el) => (el.onclick = () => { state.filtro = el.dataset.filtro; render(); }));
+}
+
+function vistaMis() {
+  const s = state.solicitudes;
+  $(".vista").innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${s.length}</b><span>Solicitados</span></div>
+      <div class="stat"><b>${s.filter((x) => x.estado === "En proceso").length}</b><span>En proceso</span></div>
+      <div class="stat"><b>${s.filter((x) => x.estado === "Aprobado").length}</b><span>Aprobados</span></div>
+    </div>
+    <div class="seccion">Mis solicitudes</div>
+    ${s.length ? s.map((x) => { const b = state.beneficios.find((y) => y.id === x.id) || {}; return `
+      <div class="card"><span class="tag ${x.estado === "Aprobado" ? "ok" : "wait"}">${x.estado}</span>
+        <h3>${esc(b.nombre || x.id)}</h3><p>Código: <b>${x.codigo}</b> · ${x.fecha}</p>
+        <button class="btn sec" data-qr="${x.codigo}">Ver código QR</button></div>`; }).join("")
+      : `<div class="vacio">Sin solicitudes.<br>Aún no has solicitado ningún beneficio. Usa el chat para encontrar beneficios disponibles para ti.</div>`}`;
+  app.querySelectorAll("[data-qr]").forEach((el) => (el.onclick = () => mostrarQR(state.solicitudes.find((x) => x.codigo === el.dataset.qr))));
+}
+
+function vistaPerfil() {
+  const p = state.perfil;
+  const filas = [["Nombre", `${p.nombre} ${p.apellidoP} ${p.apellidoM || ""}`], ["RUT", p.rut], ["Edad", `${p.edad} años`], ["Género", p.genero],
+    ["Dirección", p.direccion || "—"], ["Teléfono", p.telefono || "—"], ["Email", p.email || "—"],
+    ["Ingreso del hogar", INGRESOS.find(([v]) => v === p.ingreso)?.[1] || "—"], ["Intereses", (p.intereses || []).join(", ") || "—"]];
+  $(".vista").innerHTML = `<div class="card">${filas.map(([k, v]) => `<div class="fila"><span>${k}</span><span>${esc(v)}</span></div>`).join("")}</div>
+    <button class="btn sec" id="reset" style="width:100%">🔄 Comenzar de nuevo</button>`;
+  $("#reset").onclick = () => {
+    if (!confirm("¿Borrar tu perfil y el historial de este dispositivo?")) return;
+    ["munia.perfil", "munia.solicitudes", "munia.mensajes"].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+    Object.assign(state, { perfil: null, solicitudes: [], mensajes: [], paso: 1, borrador: { intereses: [] }, tab: "chat" });
+    render();
+  };
+}
+
+function solicitar(id) {
+  if (state.solicitudes.some((s) => s.id === id)) return;
+  const codigo = "MUN-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+  const s = { id, codigo, estado: "En proceso", fecha: new Date().toLocaleDateString("es-CL") };
+  state.solicitudes.push(s);
+  guardar("munia.solicitudes", state.solicitudes);
+  render();
+  mostrarQR(s);
+}
+
+function mostrarQR(s) {
+  const b = state.beneficios.find((x) => x.id === s.id) || {};
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="hoja"><h3>Solicitud Registrada</h3><p class="paso">${esc(b.nombre || "")}</p>
+    <div class="qr" id="qr"></div><div class="codigo">${s.codigo}</div>
+    <p class="paso">Presenta este código QR en ${esc(b.lugar || "la municipalidad")}</p>
+    <button class="btn" style="width:100%">Entendido</button></div>`;
+  document.querySelector(".phone").appendChild(m);
+  if (window.QRCode) new QRCode(m.querySelector("#qr"), { text: `${s.codigo}|${s.id}|${state.perfil.rut}`, width: 160, height: 160 });
+  else m.querySelector("#qr").textContent = "(QR no disponible sin conexión)";
+  m.querySelector("button").onclick = () => m.remove();
+}
 
 // --- Render principal --------------------------------------------------------------
 const TABS = [["chat", "💬", "Chat"], ["beneficios", "🎁", "Beneficios"], ["mis", "📋", "Mis beneficios"], ["perfil", "👤", "Perfil"]];
