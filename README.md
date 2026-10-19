@@ -11,8 +11,9 @@ Todo se escribe con prompts a **Claude Code**.
   <img src="docs/img/munia_beneficios.png" width="160" />
 </p>
 
-> **Producción vs. hands-on.** En MUNIA el LLM corre **local** en la municipalidad, así que los datos de
-> los vecinos no salen de ahí. Hoy usamos OpenRouter con el mismo tipo de modelo (Llama 70B, pesos
+> **Producción vs. hands-on.** MUNIA funciona **por WhatsApp** y su LLM corre **local** en la
+> municipalidad, así que los datos de los vecinos no salen de ahí. Aquí construimos el mismo cerebro
+> con una interfaz web estilo WhatsApp, para iterar rápido en clase. Hoy usamos OpenRouter con el mismo tipo de modelo (Llama 70B, pesos
 > abiertos). Como la API es compatible con OpenAI, pasar a un servidor local (Ollama o vLLM) es
 > cambiar `BASE_URL`.
 
@@ -163,7 +164,8 @@ abrirlo desde ahí.
 
 ## Desafíos extra
 
-1. 🎙️ **Voz:** botón de micrófono con Web Speech API (`webkitSpeechRecognition`, `lang = "es-CL"`).
+1. 💬 **WhatsApp real:** conecta el servidor a la WhatsApp Cloud API (Meta) con un webhook que reciba el
+   mensaje, llame a la misma lógica de `/api/chat` y responda. Para probar en local, expón tu servidor con un túnel.
 2. ♿ **Accesibilidad:** modo letra grande y alto contraste para adultos mayores.
 3. 📄 **RAG:** carga un PDF de una ordenanza, divídelo en fragmentos y cita la fuente en cada respuesta.
 4. 💻 **LLM local:** `ollama run llama3.2` y luego en `.env`: `BASE_URL=http://localhost:11434/v1` y `MODEL=llama3.2`.
