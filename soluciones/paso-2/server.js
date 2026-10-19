@@ -43,6 +43,10 @@ function readBody(req) {
 
 async function chat(req, res) {
   const { perfil = {}, messages = [] } = await readBody(req);
+  if (BASE_URL.includes("openrouter") && (!API_KEY || API_KEY.includes("PEGA_AQUI"))) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ error: "Falta tu API key: copia .env.example a .env y reemplaza PEGA_AQUI_TU_API_KEY." }));
+  }
   const historial = messages.slice(-12).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: String(m.content).slice(0, 2000) }));
 
   // Un reintento ante fallas de red: en una demo en vivo el wifi no perdona.
@@ -111,5 +115,5 @@ http.createServer(async (req, res) => {
   }
 }).listen(PORT, () => {
   console.log(`MUNIA en http://localhost:${PORT}  ·  modelo: ${MODEL}`);
-  if (!API_KEY && BASE_URL.includes("openrouter")) console.warn("⚠  Falta OPENROUTER_API_KEY en .env");
+  if (BASE_URL.includes("openrouter") && (!API_KEY || API_KEY.includes("PEGA_AQUI"))) console.warn("⚠  Falta tu OPENROUTER_API_KEY en .env");
 });
