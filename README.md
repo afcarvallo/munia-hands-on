@@ -19,8 +19,8 @@ Todo se escribe con prompts a **Claude Code**.
 | Paso | Qué construyes | Tiempo |
 |---|---|---|
 | [0](#paso-0--clonar-y-configurar) | Clonar, pegar tu API key y abrir Claude Code | 3 min |
-| [1](#paso-1--la-app-completa-en-un-prompt) | La app completa en un prompt: servidor, registro y chat | 5 min |
-| [2](#paso-2--reglas-antes-del-llm) | **Reglas de elegibilidad**: que el modelo deje de inventar | 4 min |
+| [1](#paso-1--la-app-completa-en-un-prompt) | La app completa en un prompt: servidor, registro y chat | 8 min |
+| [2](#paso-2--reglas-antes-del-llm) | **Reglas de elegibilidad**: que el modelo deje de inventar | 7 min |
 | [Bonus](#bonus--solicitudes-con-qr) | Solicitudes con QR, catálogo y perfil (para la casa) | 10 min |
 
 **¿Te atrasaste?** Cada paso tiene su solución en [`soluciones/`](soluciones/):
