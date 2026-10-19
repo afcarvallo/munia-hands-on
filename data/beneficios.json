@@ -1,0 +1,156 @@
+[
+  {
+    "id": "pension-mayor",
+    "nombre": "Aporte Municipal Adulto Mayor",
+    "categoria": "Adulto mayor",
+    "descripcion": "Aporte mensual de $45.000 para personas mayores de 65 años sin pensión.",
+    "requisitos": ["Tener 65 años o más", "No recibir pensión contributiva", "Residir en la comuna"],
+    "edad_min": 65, "edad_max": null, "genero": null, "ingreso_max": 500000,
+    "cuando": "Todo el año - Pagos mensuales",
+    "lugar": "DIDECO, Oficina 3, Edificio Consistorial",
+    "cupos": 120
+  },
+  {
+    "id": "taller-acuatico",
+    "nombre": "Acuaterapia Adulto Mayor",
+    "categoria": "Deporte",
+    "descripcion": "Clases especializadas para mayores de 60. Martes y jueves en la mañana.",
+    "requisitos": ["Tener 60 años o más", "Certificado médico simple", "Gorro y traje de baño propios"],
+    "edad_min": 60, "edad_max": null, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Ciclos de 3 meses",
+    "lugar": "Piscina Municipal",
+    "cupos": 30
+  },
+  {
+    "id": "pap-mamografia",
+    "nombre": "Operativo PAP y Mamografía",
+    "categoria": "Salud",
+    "descripcion": "Papanicolau y mamografía sin costo para mujeres mayores de 25 años.",
+    "requisitos": ["Ser mujer mayor de 25 años", "No haber realizado PAP en el último año"],
+    "edad_min": 25, "edad_max": null, "genero": "Femenino", "ingreso_max": null,
+    "cuando": "Todo el año - Una vez al año",
+    "lugar": "CESFAM Central",
+    "cupos": 200
+  },
+  {
+    "id": "nino-sano",
+    "nombre": "Control Niño Sano",
+    "categoria": "Salud",
+    "descripcion": "Controles de crecimiento, vacunas y estimulación temprana.",
+    "requisitos": ["Niños de 0 a 6 años", "Inscripción en CESFAM de la comuna"],
+    "edad_min": 0, "edad_max": 6, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Según disponibilidad de horas",
+    "lugar": "CESFAM Central y CESFAM Norte",
+    "cupos": null
+  },
+  {
+    "id": "lentes",
+    "nombre": "Lentes Ópticos Municipales",
+    "categoria": "Salud",
+    "descripcion": "Un par de lentes ópticos con copago mínimo para hogares vulnerables.",
+    "requisitos": ["Tener 40 años o más", "Receta oftalmológica vigente", "Registro Social de Hogares"],
+    "edad_min": 40, "edad_max": null, "genero": null, "ingreso_max": 700000,
+    "cuando": "Todo el año - Un par de lentes cada 2 años",
+    "lugar": "Oficina de Salud Municipal",
+    "cupos": 80
+  },
+  {
+    "id": "beca-escolar",
+    "nombre": "Beca Útiles Escolares",
+    "categoria": "Educación",
+    "descripcion": "Set de útiles escolares y mochila para estudiantes de básica y media.",
+    "requisitos": ["Tener entre 6 y 17 años", "Estar matriculado en un colegio", "Registro Social de Hogares"],
+    "edad_min": 6, "edad_max": 17, "genero": null, "ingreso_max": 900000,
+    "cuando": "Febrero - Marzo (inicio año escolar)",
+    "lugar": "DIDECO",
+    "cupos": 500
+  },
+  {
+    "id": "escuela-futbol",
+    "nombre": "Escuela de Fútbol Infantil",
+    "categoria": "Deporte",
+    "descripcion": "Entrenamiento gratuito de fútbol para niñas y niños.",
+    "requisitos": ["Tener entre 5 y 14 años", "Autorización del apoderado"],
+    "edad_min": 5, "edad_max": 14, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Inscripción permanente",
+    "lugar": "Estadio Municipal",
+    "cupos": 60
+  },
+  {
+    "id": "orquesta",
+    "nombre": "Orquesta Juvenil Comunal",
+    "categoria": "Cultura",
+    "descripcion": "Clases gratuitas de instrumentos y práctica orquestal.",
+    "requisitos": ["Tener 10 años o más", "Participar en concierto de fin de año"],
+    "edad_min": 10, "edad_max": 25, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Sesiones semanales",
+    "lugar": "Casa de la Cultura",
+    "cupos": 40
+  },
+  {
+    "id": "basquetbol",
+    "nombre": "Liga Comunal de Básquetbol",
+    "categoria": "Deporte",
+    "descripcion": "Torneo de básquetbol por categorías. Inscripción abierta todo el año.",
+    "requisitos": ["Tener 12 años o más"],
+    "edad_min": 12, "edad_max": null, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Inscripción permanente",
+    "lugar": "Gimnasio Municipal",
+    "cupos": null
+  },
+  {
+    "id": "empleo-joven",
+    "nombre": "Programa Empleo Joven (OMIL)",
+    "categoria": "Empleo",
+    "descripcion": "Capacitación en oficios y apoyo para el primer empleo.",
+    "requisitos": ["Tener entre 15 y 29 años", "Mayor de 16 años para práctica laboral"],
+    "edad_min": 15, "edad_max": 29, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Ciclos de 3 meses",
+    "lugar": "OMIL, Oficina Municipal de Intermediación Laboral",
+    "cupos": 50
+  },
+  {
+    "id": "mujer-emprende",
+    "nombre": "Mujer Emprende",
+    "categoria": "Empleo",
+    "descripcion": "Capital semilla de hasta $500.000 y mentoría para emprendedoras.",
+    "requisitos": ["Ser mujer entre 18 y 65 años", "Tener un emprendimiento o idea de negocio"],
+    "edad_min": 18, "edad_max": 65, "genero": "Femenino", "ingreso_max": 1200000,
+    "cuando": "Todo el año - Renovación semestral",
+    "lugar": "Oficina de la Mujer",
+    "cupos": 25
+  },
+  {
+    "id": "subsidio-agua",
+    "nombre": "Subsidio de Agua Potable",
+    "categoria": "Vivienda",
+    "descripcion": "Descuento de hasta 50% en la cuenta de agua para hogares vulnerables.",
+    "requisitos": ["Mayor de 18 años", "Registro Social de Hogares", "Estar al día en la cuenta"],
+    "edad_min": 18, "edad_max": null, "genero": null, "ingreso_max": 600000,
+    "cuando": "Todo el año - Renovación semestral",
+    "lugar": "DIDECO",
+    "cupos": null
+  },
+  {
+    "id": "salud-mental",
+    "nombre": "Apoyo Psicológico Comunal",
+    "categoria": "Salud",
+    "descripcion": "Atención psicológica gratuita, individual o familiar.",
+    "requisitos": ["Tener 7 años o más", "Derivación del CESFAM o inscripción directa"],
+    "edad_min": 7, "edad_max": null, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Sesiones semanales o quincenales",
+    "lugar": "Centro Comunitario de Salud Mental",
+    "cupos": 35
+  },
+  {
+    "id": "yoga",
+    "nombre": "Yoga en tu Plaza",
+    "categoria": "Deporte",
+    "descripcion": "Clases abiertas de yoga los sábados en plazas de la comuna.",
+    "requisitos": ["Tener entre 8 y 70 años", "Traer mat propio"],
+    "edad_min": 8, "edad_max": 70, "genero": null, "ingreso_max": null,
+    "cuando": "Todo el año - Sábados 10:00",
+    "lugar": "Plaza de Armas",
+    "cupos": null
+  }
+]
