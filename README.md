@@ -23,6 +23,8 @@ Todo se escribe con prompts a **Claude Code**.
 | [2](#paso-2--reglas-antes-del-llm) | **Reglas de elegibilidad**: que el modelo deje de inventar | 7 min |
 | [Bonus](#bonus--solicitudes-con-qr) | Solicitudes con QR, catálogo y perfil (para la casa) | 10 min |
 
+📋 **Todos los prompts juntos, para copiar:** [`PROMPTS.md`](PROMPTS.md)
+
 **¿Te atrasaste?** Cada paso tiene su solución en [`soluciones/`](soluciones/):
 
 ```bash
@@ -89,8 +91,9 @@ Anota qué responde: probablemente **invente** beneficios que no existen en el c
 > En el servidor, filtra `data/beneficios.json` con **reglas en código** según el perfil (`edad_min`,
 > `edad_max`, `genero`, `ingreso_max`) y arma un system prompt con el perfil y **solo** los beneficios
 > filtrados. Reglas para el modelo: no inventar, máximo 120 palabras, y escribir `[[BENEFICIO:id]]` en
-> una línea aparte al recomendar uno. En el chat, convierte cada etiqueta en una tarjeta con botón
-> "Solicitar", en el mismo lugar donde aparece.
+> una línea aparte al recomendar uno (dale un ejemplo con un id real). En el chat, convierte cada etiqueta
+> en una tarjeta con botón "Solicitar", en el mismo lugar donde aparece. El parser debe ser tolerante:
+> los modelos a veces escriben `[[id]]` sin el prefijo.
 
 ✅ **Checkpoint:** repite la pregunta del paso 1. Ahora solo debería nombrar beneficios **reales**,
 en tarjetas, y nunca *Control Niño Sano*, que es para menores de 6 años. Luego pregunta por un
