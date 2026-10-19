@@ -1,4 +1,4 @@
-// MUNIA · PASO 2: registro ciudadano en 4 pasos (JS plano, estado en localStorage).
+// MUNIA · PASO 2: chat con streaming + tarjetas de beneficio (JS plano).
 
 const $ = (s) => document.querySelector(s);
 const app = $("#app");
@@ -16,12 +16,18 @@ const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } 
 
 const state = {
   perfil: guardado("munia.perfil", null),
+  solicitudes: guardado("munia.solicitudes", []),
+  mensajes: guardado("munia.mensajes", []),
+  tab: "chat",
   paso: 1,
   borrador: { intereses: [] },
+  beneficios: [],
+  cargando: false,
 };
 
 // --- Utilidades ---------------------------------------------------------------
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clp = (n) => "$" + Number(n).toLocaleString("es-CL");
 
 function rutValido(rut) {
   const r = rut.replace(/[.\-\s]/g, "").toUpperCase();
@@ -37,6 +43,18 @@ function edadDesde(fecha) {
   let e = h.getFullYear() - f.getFullYear();
   if (h < new Date(h.getFullYear(), f.getMonth(), f.getDate())) e--;
   return e;
+}
+
+function md(texto) {
+  const lineas = esc(texto).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split("\n");
+  let html = "", enLista = false;
+  for (const l of lineas) {
+    const item = l.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
+    if (item) { if (!enLista) { html += "<ul>"; enLista = true; } html += `<li>${item[1]}</li>`; continue; }
+    if (enLista) { html += "</ul>"; enLista = false; }
+    html += l + "\n";
+  }
+  return (enLista ? html + "</ul>" : html).trim();
 }
 
 // --- Registro (4 pasos) --------------------------------------------------------
@@ -93,6 +111,8 @@ function vistaRegistro() {
     if (state.paso < 4) { state.paso++; return render(); }
     state.perfil = { ...b, edad: edadDesde(b.nacimiento) };
     guardar("munia.perfil", state.perfil);
+    state.mensajes = [{ role: "assistant", content: `¡Hola, ${b.nombre}! 👋 Soy MUNIA, tu asistente municipal. Con tu perfil ya revisé qué beneficios podrías recibir. ¿Qué necesitas hoy?` }];
+    guardar("munia.mensajes", state.mensajes);
     render();
   };
 }
@@ -116,32 +136,95 @@ function validar(paso) {
   return "";
 }
 
-// --- Perfil guardado (el chat llega en el paso 3) ------------------------------
-function vistaListo() {
-  const p = state.perfil;
-  app.innerHTML = `
-    <div class="header"><div class="avatar">M</div><div><h1>MUNIA · Asistente Municipal</h1><small>perfil guardado</small></div></div>
-    <div class="registro">
-      <h2>¡Listo, ${esc(p.nombre)}! ✅</h2>
-      <p class="paso">Tu perfil quedó guardado en este dispositivo. En el paso 3 conectamos el chat.</p>
-      <div class="card">
-        <div class="fila"><span>RUT</span><span>${esc(p.rut)}</span></div>
-        <div class="fila"><span>Edad</span><span>${p.edad} años</span></div>
-        <div class="fila"><span>Género</span><span>${esc(p.genero)}</span></div>
-        <div class="fila"><span>Intereses</span><span>${esc((p.intereses || []).join(", ") || "—")}</span></div>
-      </div>
-      <button class="btn sec" id="reset" style="width:100%">🔄 Comenzar de nuevo</button>
-    </div>`;
-  $("#reset").onclick = () => {
-    try { localStorage.removeItem("munia.perfil"); } catch {}
-    Object.assign(state, { perfil: null, paso: 1, borrador: { intereses: [] } });
-    render();
-  };
+// --- Chat ------------------------------------------------------------------------
+const SUGERENCIAS = ["¿Qué beneficios tengo?", "Busco actividades deportivas", "Necesito apoyo en salud", "¿Hay algo para emprender?"];
+
+function tarjeta(b, compacta = false) {
+  const sol = state.solicitudes.find((s) => s.id === b.id);
+  return `<div class="card">
+    <span class="tag">${esc(b.categoria)}</span>
+    <h3>${esc(b.nombre)}</h3>
+    <p>${esc(b.descripcion)}</p>
+    ${compacta ? "" : `<ul>${b.requisitos.map((r) => `<li>${esc(r)}</li>`).join("")}</ul><p>🗓 ${esc(b.cuando)}<br>📍 ${esc(b.lugar)}</p>`}
+    <button class="btn" data-solicitar="${b.id}" ${sol ? "disabled" : ""}>${sol ? "✓ Solicitado" : "Solicitar"}</button>
+  </div>`;
 }
+
+function burbuja(m) {
+  if (m.role === "user") return `<div class="msg user">${esc(m.content)}</div>`;
+  // El texto se corta en cada [[BENEFICIO:id]] y la tarjeta aparece justo donde el modelo la mencionó.
+  return m.content.split(/\[\[(?:BENEFICIO:)?([\w-]+)\]\]/).map((parte, i) => {
+    if (i % 2 === 1) { const b = state.beneficios.find((x) => x.id === parte); return b ? tarjeta(b, true) : ""; }
+    const t = parte.trim();
+    return t ? `<div class="msg bot">${md(t)}</div>` : "";
+  }).join("");
+}
+
+function vistaChat() {
+  const v = $(".vista");
+  v.innerHTML = state.mensajes.map(burbuja).join("");
+  v.insertAdjacentHTML("afterend", `
+    <div class="sugerencias">${SUGERENCIAS.map((s) => `<button class="chip" data-sug="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+    <form class="composer"><input id="texto" placeholder="Escribe tu consulta…" autocomplete="off" /><button id="enviar">➤</button></form>`);
+  v.scrollTop = v.scrollHeight;
+  app.querySelectorAll("[data-sug]").forEach((el) => (el.onclick = () => enviar(el.dataset.sug)));
+  $(".composer").onsubmit = (e) => { e.preventDefault(); enviar($("#texto").value); };
+}
+
+async function enviar(texto) {
+  texto = texto.trim();
+  if (!texto || state.cargando) return;
+  state.cargando = true;
+  state.mensajes.push({ role: "user", content: texto });
+  const bot = { role: "assistant", content: "" };
+  state.mensajes.push(bot);
+  render();
+  const v = $(".vista");
+  const nodo = v.lastElementChild;
+  nodo.classList.add("typing");
+  $("#enviar").disabled = true;
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ perfil: state.perfil, messages: state.mensajes.slice(0, -1) }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.statusText);
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bot.content += dec.decode(value, { stream: true });
+      nodo.innerHTML = md(bot.content.replace(/\[\[[\w:-]*\]?\]?/g, ""));
+      v.scrollTop = v.scrollHeight;
+    }
+  } catch (e) {
+    bot.content = "😔 No pude conectarme con el asistente. " + e.message;
+  }
+  state.cargando = false;
+  guardar("munia.mensajes", state.mensajes);
+  render();
+}
+
+// --- Pestañas que se completan en el bonus ---------------------------------------
+const pronto = (t) => () => ($(".vista").innerHTML = `<div class="vacio">${t}<br>Llega en el bonus (paso 3) 🚧</div>`);
+const vistaBeneficios = pronto("Catálogo de beneficios");
+const vistaMis = pronto("Mis solicitudes");
+const vistaPerfil = pronto("Mi perfil");
+function solicitar() { alert("Las solicitudes con QR llegan en el bonus (paso 3) 🚧"); }
+
+// --- Render principal --------------------------------------------------------------
+const TABS = [["chat", "💬", "Chat"], ["beneficios", "🎁", "Beneficios"], ["mis", "📋", "Mis beneficios"], ["perfil", "👤", "Perfil"]];
 
 function render() {
   if (!state.perfil) return vistaRegistro();
-  vistaListo();
+  app.innerHTML = `
+    <div class="header"><div class="avatar">M</div><div><h1>MUNIA · Asistente Municipal</h1><small>en línea · Llama 3.3 70B</small></div></div>
+    <div class="vista"></div>
+    <nav class="tabs">${TABS.map(([k, i, t]) => `<button data-tab="${k}" class="${state.tab === k ? "on" : ""}"><span class="ico">${i}</span>${t}</button>`).join("")}</nav>`;
+  ({ chat: vistaChat, beneficios: vistaBeneficios, mis: vistaMis, perfil: vistaPerfil })[state.tab]();
+  app.querySelectorAll("[data-tab]").forEach((el) => (el.onclick = () => { state.tab = el.dataset.tab; render(); }));
+  app.querySelectorAll("[data-solicitar]").forEach((el) => (el.onclick = () => solicitar(el.dataset.solicitar)));
 }
 
-render();
+fetch("/api/beneficios").then((r) => r.json()).then((b) => { state.beneficios = b; render(); });

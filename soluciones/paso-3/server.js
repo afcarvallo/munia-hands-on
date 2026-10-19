@@ -1,4 +1,4 @@
-// MUNIA · PASO 3: system prompt con reglas de elegibilidad (Node 18+, sin dependencias).
+// MUNIA · PASO 3 (bonus, versión final) (Node 18+, sin dependencias).
 // Sirve el frontend de /public y hace de proxy hacia OpenRouter (Llama 3.3 70B).
 // La API key vive solo en el servidor: el navegador nunca la ve.
 

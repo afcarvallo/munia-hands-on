@@ -1,4 +1,4 @@
-// MUNIA · PASO 2: servidor (igual que el paso 1) (Node 18+, sin dependencias).
+// MUNIA · PASO 2: system prompt con reglas de elegibilidad (Node 18+, sin dependencias).
 // Sirve el frontend de /public y hace de proxy hacia OpenRouter (Llama 3.3 70B).
 // La API key vive solo en el servidor: el navegador nunca la ve.
 
@@ -24,10 +24,43 @@ const API_KEY = process.env.OPENROUTER_API_KEY || "";
 const BENEFICIOS = JSON.parse(fs.readFileSync(path.join(__dirname, "data/beneficios.json"), "utf8"));
 const COMUNA = "Municipalidad de Villa Esperanza (comuna ficticia)";
 
+// --- Reglas: la elegibilidad la deciden reglas, no el LLM -------------------------
+function elegibles(perfil) {
+  const edad = Number(perfil.edad);
+  const ingreso = Number(perfil.ingreso);
+  return BENEFICIOS.filter((b) =>
+    (b.edad_min == null || edad >= b.edad_min) &&
+    (b.edad_max == null || edad <= b.edad_max) &&
+    (b.genero == null || b.genero === perfil.genero) &&
+    (b.ingreso_max == null || !ingreso || ingreso <= b.ingreso_max)
+  );
+}
+
 function systemPrompt(perfil) {
+  const lista = elegibles(perfil);
   return `Eres MUNIA, el asistente virtual de la ${COMUNA}.
 Hablas español de Chile, con tono cálido, claro y breve (máximo 120 palabras por respuesta).
-Perfil del vecino: ${JSON.stringify(perfil)}`;
+Ayudas a vecinas y vecinos a encontrar y solicitar beneficios municipales.
+
+PERFIL DEL VECINO
+- Nombre: ${perfil.nombre || "(sin nombre)"}
+- Edad: ${perfil.edad} años
+- Género: ${perfil.genero}
+- Comuna / dirección: ${perfil.direccion || "no informada"}
+- Ingreso mensual del hogar: $${Number(perfil.ingreso || 0).toLocaleString("es-CL")}
+- Intereses: ${(perfil.intereses || []).join(", ") || "no indicados"}
+
+BENEFICIOS PARA LOS QUE CUMPLE REQUISITOS (ya filtrados por reglas)
+${JSON.stringify(lista, null, 1)}
+
+REGLAS
+1. Recomienda SOLO beneficios de la lista anterior. Nunca inventes beneficios, montos, fechas ni direcciones.
+2. Cuando recomiendes un beneficio escribe su etiqueta exacta en una línea aparte: [[BENEFICIO:id]]
+   (la app la convierte en una tarjeta con botón "Solicitar"). Máximo 3 por respuesta.
+   Formato: una frase breve de por qué le sirve y, en la línea siguiente, [[BENEFICIO:<id>]]
+3. Si preguntan por algo que no está en la lista, dilo con honestidad y sugiere acudir a la OIRS municipal.
+4. No pidas datos sensibles (claves, cuentas bancarias). No des consejos médicos ni legales.
+5. Usa **negritas** con moderación y listas cortas.`;
 }
 
 // --- HTTP ----------------------------------------------------------------------
