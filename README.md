@@ -1,4 +1,4 @@
-# MUNIA · Hands-on: un asistente municipal con vibe coding
+# MUNIA · Hands-on: un asistente municipal construido con un agente de IA
 
 Construye **paso a paso** un prototipo de chatbot municipal que conversa con un **LLM abierto**
 (Llama 3.3 70B vía OpenRouter) y recomienda solo los beneficios a los que cada vecino tiene derecho.
