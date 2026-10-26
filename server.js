@@ -1,0 +1,79 @@
+// Servidor de MUNIA (Node 18+, sin dependencias). Ya está listo: lo que programas en el taller
+// está en lib/llm.js, lib/reglas.js y lib/prompt.js.
+//
+//   GET  /api/beneficios  → el catálogo
+//   POST /api/chat        → { perfil, messages }  →  respuesta del LLM en streaming (texto plano)
+
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+
+// --- .env mínimo ---------------------------------------------------------------------
+const envPath = path.join(__dirname, ".env");
+if (fs.existsSync(envPath)) {
+  for (const linea of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const m = linea.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
+process.env.BASE_URL ||= "https://openrouter.ai/api/v1";
+process.env.MODEL ||= "meta-llama/llama-3.3-70b-instruct";
+
+const { llamarLLM } = require("./lib/llm");
+const { elegibles } = require("./lib/reglas");
+const { systemPrompt } = require("./lib/prompt");
+
+const BENEFICIOS = JSON.parse(fs.readFileSync(path.join(__dirname, "data/beneficios.json"), "utf8"));
+const PUBLIC = path.join(__dirname, "public");
+const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css", ".json": "application/json" };
+
+function leerBody(req) {
+  return new Promise((ok, mal) => {
+    let data = "";
+    req.on("data", (c) => (data += c));
+    req.on("end", () => { try { ok(JSON.parse(data || "{}")); } catch (e) { mal(e); } });
+  });
+}
+
+async function chat(req, res) {
+  const { perfil = {}, messages = [] } = await leerBody(req);
+  // El frontend manda más datos (RUT, dirección…); las reglas solo usan estos.
+  const p = { nombre: perfil.nombre, edad: Number(perfil.edad), genero: perfil.genero, ingreso: Number(perfil.ingreso) };
+
+  const lista = elegibles(p, BENEFICIOS);                      // paso 2
+  const sistema = systemPrompt(p, lista);                      // paso 3
+  console.log(`[chat] ${p.nombre || "vecino"}, ${p.edad} años: ${lista.length} de ${BENEFICIOS.length} beneficios elegibles`);
+
+  const historial = messages.slice(-10).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: String(m.content) }));
+  res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" });
+  try {
+    for await (const trozo of llamarLLM([{ role: "system", content: sistema }, ...historial])) res.write(trozo);   // paso 1
+  } catch (e) {
+    console.error("[chat]", e.message);
+    res.write(`⚠️ ${e.message}`);
+  }
+  res.end();
+}
+
+http.createServer(async (req, res) => {
+  const url = new URL(req.url, "http://x");
+  try {
+    if (req.method === "POST" && url.pathname === "/api/chat") return await chat(req, res);
+    if (url.pathname === "/api/beneficios") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify(BENEFICIOS));
+    }
+    const archivo = path.normalize(path.join(PUBLIC, url.pathname === "/" ? "index.html" : url.pathname));
+    if (!archivo.startsWith(PUBLIC) || !fs.existsSync(archivo) || fs.statSync(archivo).isDirectory()) { res.writeHead(404); return res.end("No encontrado"); }
+    res.writeHead(200, { "Content-Type": MIME[path.extname(archivo)] || "application/octet-stream", "Cache-Control": "no-cache" });
+    fs.createReadStream(archivo).pipe(res);
+  } catch (e) {
+    console.error(e);
+    if (!res.headersSent) res.writeHead(500);
+    res.end();
+  }
+}).listen(Number(process.env.PORT || 3000), () => {
+  console.log(`MUNIA en http://localhost:${process.env.PORT || 3000}  ·  modelo: ${process.env.MODEL}`);
+  const k = process.env.OPENROUTER_API_KEY || "";
+  if (!k || k.includes("PEGA_AQUI")) console.warn("⚠  Falta tu OPENROUTER_API_KEY en .env");
+});

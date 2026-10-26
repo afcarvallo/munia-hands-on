@@ -1,0 +1,11 @@
+{
+  "name": "munia-hands-on",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Hands-on UAI: el núcleo de MUNIA (LLM + reglas + prompt) en Node, sin dependencias",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=18" }
+}

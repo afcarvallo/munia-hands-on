@@ -1,4 +1,4 @@
-// MUNIA · PASO 1: registro + chat estilo WhatsApp con streaming (JS plano).
+// MUNIA · frontend (JS plano, sin build). Ya está listo: no necesitas modificarlo en el taller.
 
 const $ = (s) => document.querySelector(s);
 const app = $("#app");
@@ -207,11 +207,11 @@ async function enviar(texto) {
 }
 
 // --- Pestañas que se completan en el bonus ---------------------------------------
-const pronto = (t) => () => ($(".vista").innerHTML = `<div class="vacio">${t}<br>Llega en el bonus (paso 3) 🚧</div>`);
+const pronto = (t) => () => ($(".vista").innerHTML = `<div class="vacio">${t}<br>Llega en el bonus 🚧</div>`);
 const vistaBeneficios = pronto("Catálogo de beneficios");
 const vistaMis = pronto("Mis solicitudes");
 const vistaPerfil = pronto("Mi perfil");
-function solicitar() { alert("Las solicitudes con QR llegan en el bonus (paso 3) 🚧"); }
+function solicitar() { alert("Las solicitudes con QR llegan en el bonus 🚧"); }
 
 // --- Render principal --------------------------------------------------------------
 const TABS = [["chat", "💬", "Chat"], ["beneficios", "🎁", "Beneficios"], ["mis", "📋", "Mis beneficios"], ["perfil", "👤", "Perfil"]];
