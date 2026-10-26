@@ -152,10 +152,24 @@ function tarjeta(b, compacta = false) {
 
 function burbuja(m) {
   if (m.role === "user") return `<div class="msg user">${esc(m.content)}</div>`;
-  // El texto se corta en cada [[BENEFICIO:id]] y la tarjeta aparece justo donde el modelo la mencionó.
-  return m.content.split(/\[\[(?:BENEFICIO:)?([\w-]+)\]\]/).map((parte, i) => {
-    if (i % 2 === 1) { const b = state.beneficios.find((x) => x.id === parte); return b ? tarjeta(b, true) : ""; }
-    const t = parte.trim();
+  // Cada [[BENEFICIO:id]] (o [id], si el modelo se equivoca de formato) se convierte en tarjeta donde aparece.
+  // Solo si el id existe en el catálogo; cada beneficio se muestra una vez y las etiquetas inválidas se ocultan.
+  const vistos = new Set(), partes = [];
+  let resto = m.content;
+  const re = /\[\[?\s*(?:BENEFICIO\s*:)?\s*([^\[\]\n]*?)\s*\]\]?/gi;
+  let ult = 0, x;
+  while ((x = re.exec(resto))) {
+    const b = state.beneficios.find((y) => y.id === x[1]);
+    const esEtiqueta = x[0].startsWith("[[") || b;
+    if (!esEtiqueta) continue;                       // corchetes normales del texto: se quedan como están
+    partes.push({ t: resto.slice(ult, x.index) });
+    if (b && !vistos.has(b.id)) { vistos.add(b.id); partes.push({ b }); }
+    ult = re.lastIndex;
+  }
+  partes.push({ t: resto.slice(ult) });
+  return partes.map((p) => {
+    if (p.b) return tarjeta(p.b, true);
+    const t = p.t.replace(/[ \t]+([.,;:])/g, "$1").trim();
     return t ? `<div class="msg bot">${md(t)}</div>` : "";
   }).join("");
 }
