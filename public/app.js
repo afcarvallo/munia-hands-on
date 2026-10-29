@@ -233,7 +233,7 @@ const TABS = [["chat", "💬", "Chat"], ["beneficios", "🎁", "Beneficios"], ["
 function render() {
   if (!state.perfil) return vistaRegistro();
   app.innerHTML = `
-    <div class="header"><div class="avatar">M</div><div><h1>MUNIA · Asistente Municipal</h1><small>en línea · Llama 3.3 70B</small></div></div>
+    <div class="header"><div class="avatar">M</div><div><h1>MUNIA · Asistente Municipal</h1><small>en línea</small></div></div>
     <div class="vista"></div>
     <nav class="tabs">${TABS.map(([k, i, t]) => `<button data-tab="${k}" class="${state.tab === k ? "on" : ""}"><span class="ico">${i}</span>${t}</button>`).join("")}</nav>`;
   ({ chat: vistaChat, beneficios: vistaBeneficios, mis: vistaMis, perfil: vistaPerfil })[state.tab]();

@@ -1,7 +1,7 @@
 # MUNIA · Hands-on: el núcleo de un asistente municipal con LLM
 
 Programa las tres piezas que convierten un chat genérico en un asistente municipal confiable:
-**llamar a un LLM abierto** (Llama 3.3 70B vía OpenRouter), **decidir con reglas quién califica** y
+**llamar a un LLM** (GPT-4.1 mini vía la API de OpenAI), **decidir con reglas quién califica** y
 **darle al modelo solo lo que corresponde**. La interfaz y el servidor ya están hechos.
 
 <p align="center">
@@ -10,8 +10,8 @@ Programa las tres piezas que convierten un chat genérico en un asistente munici
 </p>
 
 > **Producción vs. taller.** MUNIA funciona por WhatsApp y su LLM corre local en la municipalidad. Aquí
-> usamos OpenRouter con el mismo tipo de modelo; como la API es compatible con OpenAI, pasar a un
-> servidor local (Ollama o vLLM) es cambiar `BASE_URL`.
+> usamos la API de OpenAI. OpenRouter, Ollama y vLLM implementan la misma API: pasar a Llama o a un
+> servidor local es cambiar `BASE_URL` y `MODEL` en `.env`.
 
 | Paso | Archivo | Qué programas | Tiempo |
 |---|---|---|---|
@@ -33,7 +33,7 @@ navegador (public/, ya listo)
 server.js (ya listo)
    ├─ elegibles(perfil, catálogo)      ← lib/reglas.js   (paso 2)
    ├─ systemPrompt(perfil, elegibles)  ← lib/prompt.js   (paso 3)
-   └─ llamarLLM([system, ...mensajes]) ← lib/llm.js      (paso 1)  ──►  OpenRouter · Llama 3.3 70B
+   └─ llamarLLM([system, ...mensajes]) ← lib/llm.js      (paso 1)  ──►  API de OpenAI · GPT-4.1 mini
    ▲
    └─ data/beneficios.json: 14 beneficios con sus reglas (edad_min, edad_max, genero, ingreso_max)
 ```
@@ -48,7 +48,7 @@ El servidor imprime en cada consulta cuántos beneficios pasaron las reglas, por
 ```bash
 git clone https://github.com/afcarvallo/munia-hands-on.git
 cd munia-hands-on
-cp .env.example .env        # pega tu key de https://openrouter.ai/keys en OPENROUTER_API_KEY
+cp .env.example .env        # pega tu key de OpenAI en API_KEY
 node server.js              # http://localhost:3000
 npm test                    # 7 tests fallan: es lo que vas a arreglar
 ```
@@ -64,7 +64,7 @@ Debería responder **"⚠️ TODO paso 1: implementa llamarLLM en lib/llm.js"**.
 
 Haz un `POST` a `${BASE_URL}/chat/completions` con `fetch`:
 
-- **Headers:** `Content-Type: application/json` y `Authorization: Bearer ${OPENROUTER_API_KEY}`.
+- **Headers:** `Content-Type: application/json` y `Authorization: Bearer ${API_KEY}`.
 - **Body:** `{ model, messages, stream: true, temperature: 0.3, max_tokens: 500 }`.
 - Si `!respuesta.ok`, lanza un `Error` con el status.
 - Devuelve el texto con `yield* leerStream(respuesta)`. `lib/sse.js` ya parsea el streaming.
@@ -132,8 +132,9 @@ cp soluciones/lib/prompt.js lib/    # paso 3
 | Síntoma | Causa probable |
 |---|---|
 | `⚠️ TODO paso N` en el chat | Esa función todavía no está implementada (o no reiniciaste el servidor) |
-| `LLM 401` | Key mal copiada en `.env`, o sin crédito en OpenRouter |
-| `fetch failed` | Sin internet, o la red bloquea openrouter.ai |
+| `LLM 401` | Key mal copiada en `.env` |
+| `LLM 429` | Sin crédito o límite de uso alcanzado en tu cuenta |
+| `fetch failed` | Sin internet, o la red bloquea la API |
 | `EADDRINUSE` | Ya hay un servidor en el puerto 3000: ciérralo o cambia `PORT` en `.env` |
 | No aparecen las tarjetas | El prompt no pide `[[BENEFICIO:id]]`, o no le pasas los ids |
 

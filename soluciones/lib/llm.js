@@ -6,7 +6,7 @@ async function* llamarLLM(messages) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${process.env.API_KEY}`,
     },
     body: JSON.stringify({ model: process.env.MODEL, messages, stream: true, temperature: 0.3, max_tokens: 500 }),
   });

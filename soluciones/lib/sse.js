@@ -15,7 +15,7 @@ async function* leerStream(respuesta) {
       try {
         const texto = JSON.parse(linea.slice(6)).choices?.[0]?.delta?.content;
         if (texto) yield texto;
-      } catch {}                                 // líneas de control (p. ej. ": OPENROUTER PROCESSING")
+      } catch {}                                 // líneas que no son JSON (comentarios de control del proveedor)
     }
   }
 }

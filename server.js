@@ -16,8 +16,9 @@ if (fs.existsSync(envPath)) {
     if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
   }
 }
-process.env.BASE_URL ||= "https://openrouter.ai/api/v1";
-process.env.MODEL ||= "meta-llama/llama-3.3-70b-instruct";
+process.env.BASE_URL ||= "https://api.openai.com/v1";
+process.env.MODEL ||= "gpt-4.1-mini";
+process.env.API_KEY ||= process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || "";
 
 const { llamarLLM } = require("./lib/llm");
 const { elegibles } = require("./lib/reglas");
@@ -74,6 +75,6 @@ http.createServer(async (req, res) => {
   }
 }).listen(Number(process.env.PORT || 3000), () => {
   console.log(`MUNIA en http://localhost:${process.env.PORT || 3000}  ·  modelo: ${process.env.MODEL}`);
-  const k = process.env.OPENROUTER_API_KEY || "";
-  if (!k || k.includes("PEGA_AQUI")) console.warn("⚠  Falta tu OPENROUTER_API_KEY en .env");
+  const k = process.env.API_KEY || "";
+  if (!k || k.includes("PEGA_AQUI")) console.warn("⚠  Falta tu API_KEY en .env");
 });
