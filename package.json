@@ -2,10 +2,16 @@
   "name": "munia-hands-on",
   "version": "2.0.0",
   "private": true,
-  "description": "Hands-on UAI: el núcleo de MUNIA (LLM + reglas + prompt) en Node, sin dependencias",
+  "description": "Taller UAI: cómo MUNIA pasa de un chat que inventa a uno confiable (LLM + reglas + prompt). Node, sin dependencias.",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "paso0": "node scripts/paso.js 0",
+    "paso1": "node scripts/paso.js 1",
+    "paso2": "node scripts/paso.js 2",
+    "paso3": "node scripts/paso.js 3"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }

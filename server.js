@@ -20,9 +20,13 @@ process.env.BASE_URL ||= "https://api.openai.com/v1";
 process.env.MODEL ||= "gpt-4.1-mini";
 process.env.API_KEY ||= process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || "";
 
-const { llamarLLM } = require("./lib/llm");
-const { elegibles } = require("./lib/reglas");
-const { systemPrompt } = require("./lib/prompt");
+// Recarga lib/ en cada consulta: al aplicar un paso (npm run pasoN) basta con volver a preguntar en el chat.
+function cargar(modulo) {
+  const ruta = require.resolve(`./lib/${modulo}`);
+  delete require.cache[ruta];
+  delete require.cache[require.resolve("./lib/sse")];
+  return require(ruta);
+}
 
 const BENEFICIOS = JSON.parse(fs.readFileSync(path.join(__dirname, "data/beneficios.json"), "utf8"));
 const PUBLIC = path.join(__dirname, "public");
@@ -41,6 +45,7 @@ async function chat(req, res) {
   // El frontend manda más datos (RUT, dirección…); las reglas solo usan estos.
   const p = { nombre: perfil.nombre, edad: Number(perfil.edad), genero: perfil.genero, ingreso: Number(perfil.ingreso) };
 
+  const { llamarLLM } = cargar("llm"), { elegibles } = cargar("reglas"), { systemPrompt } = cargar("prompt");
   const lista = elegibles(p, BENEFICIOS);                      // paso 2
   const sistema = systemPrompt(p, lista);                      // paso 3
   console.log(`[chat] ${p.nombre || "vecino"}, ${p.edad} años: ${lista.length} de ${BENEFICIOS.length} beneficios elegibles`);
