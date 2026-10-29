@@ -71,7 +71,7 @@ Haz un `POST` a `${BASE_URL}/chat/completions` con `fetch`:
 
 ✅ **Checkpoint:** reinicia el servidor (`Ctrl+C` y `node server.js`). Regístrate como una **mujer de 70
 años con ingreso bajo** y pregunta **"¿qué beneficios de salud tengo?"**. El chat responde, pero
-**inventa** beneficios que no están en el catálogo (en nuestra prueba, "medicamentos subsidiados"). El log
+**inventa** beneficios que no están en el catálogo (en nuestra prueba con GPT-4.1 mini: "AUGE/GES" y "apoyo en medicamentos"). El log
 dice `14 de 14 beneficios elegibles`: todavía no hay reglas.
 
 ---
