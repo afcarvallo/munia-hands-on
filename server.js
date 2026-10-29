@@ -3,6 +3,8 @@
 //
 //   GET  /api/beneficios  → el catálogo
 //   POST /api/chat        → { perfil, messages }  →  respuesta del LLM en streaming (texto plano)
+//   GET  /api/paso        → en qué paso del taller está lib/ (la barra de pasos de la app)
+//   POST /api/paso        → { n }  →  aplica ese paso, igual que npm run pasoN
 
 const http = require("http");
 const fs = require("fs");
@@ -28,6 +30,7 @@ function cargar(modulo) {
   return require(ruta);
 }
 
+const PASO = require("./scripts/paso");
 const BENEFICIOS = JSON.parse(fs.readFileSync(path.join(__dirname, "data/beneficios.json"), "utf8"));
 const PUBLIC = path.join(__dirname, "public");
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css", ".json": "application/json" };
@@ -50,12 +53,13 @@ async function chat(req, res) {
   console.log(`[chat] ${p.nombre || "vecino"}, ${p.edad} años: ${lista.length} de ${BENEFICIOS.length} beneficios elegibles`);
 
   const historial = messages.slice(-10).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: String(m.content) }));
-  res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" });
+  res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache",
+                      "X-Elegibles": `${lista.length}/${BENEFICIOS.length}`, "X-Elegibles-Ids": lista.map((b) => b.id).join(",") });
   try {
     for await (const trozo of llamarLLM([{ role: "system", content: sistema }, ...historial])) res.write(trozo);   // paso 1
   } catch (e) {
     console.error("[chat]", e.message);
-    const pista = e.message.startsWith("TODO") ? `\n\nAplica el paso en la carpeta de este servidor:\n${__dirname}` : "";
+    const pista = e.message.startsWith("TODO") ? "\n\nActiva el paso 1 en la barra «Pasos del taller», junto al teléfono." : "";
     res.write(`⚠️ ${e.message}${pista}`);
   }
   res.end();
@@ -65,6 +69,15 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   try {
     if (req.method === "POST" && url.pathname === "/api/chat") return await chat(req, res);
+    if (url.pathname === "/api/paso") {
+      if (req.method === "POST") {
+        const { n } = await leerBody(req);
+        PASO.aplicar(Number(n));
+        console.log(`[paso] aplicado desde la app: ${n} · ${PASO.PASOS[n].titulo}`);
+      }
+      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+      return res.end(JSON.stringify({ paso: PASO.actual(), pasos: PASO.PASOS }));
+    }
     if (url.pathname === "/api/beneficios") {
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify(BENEFICIOS));
@@ -80,7 +93,7 @@ http.createServer(async (req, res) => {
   }
 }).listen(Number(process.env.PORT || 3000), () => {
   console.log(`MUNIA en http://localhost:${process.env.PORT || 3000}  ·  modelo: ${process.env.MODEL}`);
-  console.log(`Carpeta: ${__dirname}  ·  aplica los pasos aquí con: npm run paso1`);
+  console.log(`Carpeta: ${__dirname}  ·  elige el paso en la app o con: npm run paso1`);
   const k = process.env.API_KEY || "";
   if (!k || k.includes("PEGA_AQUI")) console.warn("⚠  Falta tu API_KEY en .env");
 });

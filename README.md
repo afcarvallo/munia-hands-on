@@ -30,13 +30,17 @@ bajo. Son los únicos datos que usan las reglas. Escribe algo en el chat: respon
 
 ## Los 3 pasos
 
-Deja el servidor corriendo. En **otra terminal** aplica cada paso y luego vuelve a preguntar en el chat
-**"¿qué beneficios de salud tengo?"**. No hace falta reiniciar: el servidor recarga el código en cada consulta.
+Elige cada paso en el panel **Pasos del taller**, junto al teléfono (botones 0 a 3), o en otra terminal con
+`npm run pasoN`. Luego pregunta **"¿qué beneficios de salud tengo?"** (o usa **↻ Volver a preguntar**). No hace
+falta reiniciar: el servidor recarga el código en cada consulta, y cada paso abre una conversación nueva.
+
+Después de cada pregunta, el panel muestra el **catálogo completo**: ✓ lo que pasó las reglas y ✗ lo que quedó
+fuera, con el motivo (por ejemplo, "hasta 6 años").
 
 | Comando | Qué cambia | Qué vas a ver |
 |---|---|---|
-| `npm run paso1` | `lib/llm.js`: MUNIA se conecta al LLM | Responde… pero **inventa** beneficios que no existen. El log dice `14 de 14 beneficios elegibles` |
-| `npm run paso2` | `lib/reglas.js`: reglas de elegibilidad (edad, género, ingreso), con tests | El log baja a `8 de 14`, pero la respuesta **sigue inventando**: el modelo aún no ve la lista |
+| `npm run paso1` | `lib/llm.js`: MUNIA se conecta al LLM | Responde… pero **inventa** beneficios que no existen. El panel marca los 14 como elegibles: aún no hay reglas |
+| `npm run paso2` | `lib/reglas.js`: reglas de elegibilidad (edad, género, ingreso), con tests | El panel tacha 6 beneficios y queda en `8 de 14`, pero la respuesta **sigue inventando**: el modelo aún no ve la lista |
 | `npm run paso3` | `lib/prompt.js`: el prompt incluye **solo** lo elegible y prohíbe inventar | **Solo beneficios reales, en tarjetas**. Ante un "subsidio de arriendo", dice que no existe |
 
 Para volver al inicio y repetirlo: `npm run paso0`.
@@ -57,7 +61,7 @@ en `soluciones/lib/`.
 
 | Síntoma | Causa probable |
 |---|---|
-| `⚠️ TODO paso N` en el chat | Ese paso aún no se aplicó, o lo aplicaste en otra carpeta: corre `npm run pasoN` donde corre el servidor (el chat te indica cuál) |
+| `⚠️ TODO paso N` en el chat | Ese paso aún no se aplicó: elígelo en el panel **Pasos del taller** |
 | `LLM 401` | Key mal copiada o vencida en `.env` |
 | `LLM 429` | Sin crédito o límite de uso alcanzado |
 | `fetch failed` | Sin internet, o la red bloquea la API |
