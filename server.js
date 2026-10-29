@@ -42,7 +42,6 @@ function leerBody(req) {
 
 async function chat(req, res) {
   const { perfil = {}, messages = [] } = await leerBody(req);
-  // El frontend manda más datos (RUT, dirección…); las reglas solo usan estos.
   const p = { nombre: perfil.nombre, edad: Number(perfil.edad), genero: perfil.genero, ingreso: Number(perfil.ingreso) };
 
   const { llamarLLM } = cargar("llm"), { elegibles } = cargar("reglas"), { systemPrompt } = cargar("prompt");
@@ -56,7 +55,8 @@ async function chat(req, res) {
     for await (const trozo of llamarLLM([{ role: "system", content: sistema }, ...historial])) res.write(trozo);   // paso 1
   } catch (e) {
     console.error("[chat]", e.message);
-    res.write(`⚠️ ${e.message}`);
+    const pista = e.message.startsWith("TODO") ? `\n\nAplica el paso en la carpeta de este servidor:\n${__dirname}` : "";
+    res.write(`⚠️ ${e.message}${pista}`);
   }
   res.end();
 }
@@ -80,6 +80,7 @@ http.createServer(async (req, res) => {
   }
 }).listen(Number(process.env.PORT || 3000), () => {
   console.log(`MUNIA en http://localhost:${process.env.PORT || 3000}  ·  modelo: ${process.env.MODEL}`);
+  console.log(`Carpeta: ${__dirname}  ·  aplica los pasos aquí con: npm run paso1`);
   const k = process.env.API_KEY || "";
   if (!k || k.includes("PEGA_AQUI")) console.warn("⚠  Falta tu API_KEY en .env");
 });

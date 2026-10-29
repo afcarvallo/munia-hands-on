@@ -24,8 +24,8 @@ cp .env.example .env     # pega tu key de OpenAI en API_KEY
 npm start                # http://localhost:3000
 ```
 
-Abre `http://localhost:3000` y regístrate como **Ana**: RUT de prueba `11.111.111-1`, nacida en 1956,
-género Femenino y el ingreso más bajo. Escribe algo en el chat: responde
+Abre `http://localhost:3000` y regístrate como **Ana**: 70 años, género Femenino y el ingreso más
+bajo. Son los únicos datos que usan las reglas. Escribe algo en el chat: responde
 **"⚠️ TODO paso 1"**, porque todavía no está conectado a nada.
 
 ## Los 3 pasos
@@ -57,7 +57,7 @@ en `soluciones/lib/`.
 
 | Síntoma | Causa probable |
 |---|---|
-| `⚠️ TODO paso N` en el chat | Ese paso aún no se aplicó |
+| `⚠️ TODO paso N` en el chat | Ese paso aún no se aplicó, o lo aplicaste en otra carpeta: corre `npm run pasoN` donde corre el servidor (el chat te indica cuál) |
 | `LLM 401` | Key mal copiada o vencida en `.env` |
 | `LLM 429` | Sin crédito o límite de uso alcanzado |
 | `fetch failed` | Sin internet, o la red bloquea la API |
