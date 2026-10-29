@@ -212,8 +212,8 @@ function renderTaller() {
   const n = state.paso, p = state.pasos[n];
   const [ele, tot] = (state.elegibles || "").split("/");
   const quien = state.perfil ? esc(state.perfil.nombre) : "cada vecino";
-  const nota = n === 3 ? "El modelo recibe solo esta lista."
-    : n === 2 ? "Lo calculan las reglas. El modelo todavía no recibe esta lista: por eso la respuesta no cambia."
+  const nota = n === 3 ? "El modelo recibe solo esta lista y tiene prohibido inventar."
+    : n === 2 ? "Lo calculan las reglas, y el modelo ya recibe esta lista."
     : "Sin reglas, todos cuentan como elegibles.";
   t.innerHTML = `
     <h2>Pasos del taller</h2>

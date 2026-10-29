@@ -39,9 +39,9 @@ fuera, con el motivo (por ejemplo, "hasta 6 años").
 
 | Comando | Qué cambia | Qué vas a ver |
 |---|---|---|
-| `npm run paso1` | `lib/llm.js`: MUNIA se conecta al LLM | Responde… pero **inventa** beneficios que no existen. El panel marca los 14 como elegibles: aún no hay reglas |
-| `npm run paso2` | `lib/reglas.js`: reglas de elegibilidad (edad, género, ingreso), con tests | El panel tacha 6 beneficios y queda en `8 de 14`, pero la respuesta **sigue inventando**: el modelo aún no ve la lista |
-| `npm run paso3` | `lib/prompt.js`: el prompt incluye **solo** lo elegible y prohíbe inventar | **Solo beneficios reales, en tarjetas**. Ante un "subsidio de arriendo", dice que no existe |
+| `npm run paso1` | `lib/llm.js`: MUNIA se conecta al LLM | Responde… pero **inventa** beneficios ("descuentos en medicamentos", "subsidio de arriendo"). El panel marca los 14 como elegibles: aún no hay reglas |
+| `npm run paso2` | `lib/reglas.js`: reglas de elegibilidad (edad, género, ingreso), con tests. `lib/prompt.js`: el prompt recibe esa lista | El panel tacha 6 beneficios (`8 de 14`) y el chat **ya nombra beneficios reales**… pero solo en texto, sin tarjetas, y nada le impide inventar |
+| `npm run paso3` | `lib/prompt.js`: reglas claras para el modelo: no inventar, máximo 3, etiqueta `[[BENEFICIO:id]]` | **Solo beneficios reales, en tarjetas** con botón Solicitar. Ante un "subsidio de arriendo", dice que no existe y sugiere la OIRS |
 
 Para volver al inicio y repetirlo: `npm run paso0`.
 
@@ -53,7 +53,7 @@ deja los criterios a la vista, algo indispensable en un servicio público.
 
 ## ¿Quieres programarlo tú?
 
-Con `npm run paso0` los tres archivos de `lib/` quedan con sus **TODO** y su documentación. Impleméntalos en
+Con `npm run paso0` los tres archivos de `lib/` quedan con sus **TODO** y su documentación (la versión intermedia del prompt del paso 2 está en `soluciones/paso2/`). Impleméntalos en
 orden (`llm.js`, `reglas.js`, `prompt.js`) y verifica con `npm test`, que trae 11 tests. Las soluciones están
 en `soluciones/lib/`.
 
